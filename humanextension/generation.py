@@ -1,6 +1,8 @@
+import os
 from typing import Callable
 
 import torch
+import requests
 from loguru import logger
 from transformers import (
     AutoModelForCausalLM,
@@ -171,6 +173,77 @@ def create_generate_hf(checkpoint_name: str, dtype: str) -> Callable:
                              len(prompts) *
                              num_return_sequences, num_return_sequences)
         ]
+        return completions
+
+    return generate
+
+
+def create_generate_api_completion(api_url: str, model_name: str, openai: bool=False) -> Callable:
+    logger.info(f"API url: {api_url}, model name: {model_name}")
+
+    headers = {"Content-Type": "application/json"}
+    if openai:
+        headers["Authorization"] = f"Bearer {os.environ.get(['OPENAI_API_KEY'])}"
+        headers['OpenAI-Organization'] = os.environ.get(['OPENAI_ORG_ID'])
+
+    def generate(
+        prompts: list[str],
+        max_new_tokens: int,
+        temperature: float,
+        top_p: float,
+        stop_sequences: list[str],
+        num_return_sequences: int,
+    ) -> list[list[tuple[str, str]]]:
+        payload = {
+            "model": model_name,
+            "prompt": prompts,
+            "temperature": temperature,
+            "top_p": top_p,
+            "max_tokens": max_new_tokens,
+            "stop": stop_sequences,
+            "n": num_return_sequences,
+        }
+        response = requests.post(api_url, headers=headers, json=payload)
+        completions = [(choice['text'], choice['finish_reason']) for choice in response.json()['choices']]
+
+        completions = [
+            completions[idx:idx + num_return_sequences]
+            for idx in range(0, len(prompts) * num_return_sequences, num_return_sequences)
+        ]
+        return completions
+
+    return generate
+
+
+def create_generate_api_chat(api_url: str, model_name: str, openai: bool=False) -> Callable:
+    logger.info(f"API url: {api_url}, model name: {model_name}")
+
+    headers = {"Content-Type": "application/json"}
+    if openai:
+        headers["Authorization"] = f"Bearer {os.environ.get(['OPENAI_API_KEY'])}"
+        headers['OpenAI-Organization'] = os.environ.get(['OPENAI_ORG_ID'])
+
+    def generate(
+        messages_list: list[list[dict]],
+        max_new_tokens: int,
+        temperature: float,
+        top_p: float,
+        stop_sequences: list[str],
+        num_return_sequences: int,
+    ) -> list[list[tuple[str, str]]]:
+        completions = []
+        for messages in messages_list:
+            payload = {
+                "model": model_name,
+                "messages": messages,
+                "temperature": temperature,
+                "top_p": top_p,
+                "max_tokens": max_new_tokens,
+                "stop": stop_sequences,
+                "n": num_return_sequences,
+            }
+            response = requests.post(api_url, headers=headers, json=payload)
+            completions.append([(choice['message']['content'], choice['finish_reason']) for choice in response.json()['choices']])
         return completions
 
     return generate

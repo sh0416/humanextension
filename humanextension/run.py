@@ -9,7 +9,7 @@ from loguru import logger
 
 from humanextension.dataset import load_humaneval_multiple, load_humanextension
 from humanextension.evaluation import evaluate_functional_correctness
-from humanextension.generation import create_generate_hf
+from humanextension.generation import create_generate_hf, create_generate_api
 from humanextension.pipeline import (
     implement_direct_humaneval,
     implement_direct_humanextension,
@@ -28,13 +28,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--dataset", type=str, required=True, choices=["humaneval", "humanextension"])
 parser.add_argument("--method", type=str, choices=["direct", "irrelevant", "step_by_step", "oracle", "instruct-direct", "instruct-irrelevant", "instruct-oracle", "instruct-step_by_step", "multiple_auxiliary_functions"])
 parser.add_argument("--model", type=str, required=True)
+parser.add_argument("--model_dtype", type=str, default='float16', choices=['float16', 'bfloat16', 'float32'])
+parser.add_argument("--model_api_url", type=str)
 parser.add_argument("--max_new_tokens", type=int, default=512)
 parser.add_argument("--temperature", type=float, default=0.2)
 parser.add_argument("--top_p", type=float, default=0.95)
 parser.add_argument("--num_completions", type=int, default=10)
 parser.add_argument("--num_return_sequences", type=int, default=4)
 parser.add_argument("--seed", type=int, default=0)
-parser.add_argument("--model_dtype", type=str, default='float16', choices=['float16', 'bfloat16', 'float32'])
 parser.add_argument("--num_auxiliary_functions", type=int, default=1, help="Use for multiple auxiliary functions setting")
 parser.add_argument("--relevant_auxiliary_function_position", type=int, default=0, help="Use for multiple auxiliary functions setting")
 parser.add_argument("--shuffle_auxiliary_function_name", action="store_true", help="Whether to replace auxiliary function name to random. Only work when oracle setting.")
@@ -73,7 +74,10 @@ def main():
         raise NotImplementedError()
 
     logger.info("create completion function")
-    generate_fn = create_generate_hf(args.model, args.model_dtype)
+    if args.model_api_url:
+        generate_fn = create_generate_api(args.model_api_url, args.model)
+    else:
+        generate_fn = create_generate_hf(args.model, args.model_dtype)
 
     if args.method == "direct":
         if args.dataset == "humaneval":
