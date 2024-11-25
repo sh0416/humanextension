@@ -13,44 +13,54 @@ from datasets import load_dataset
 from vllm import LLM, SamplingParams
 
 BASE_MODELS = {
+    # meta-llama
     "meta-llama/CodeLlama-7b-hf",
+    "meta-llama/CodeLlama-34b-hf",
+    "meta-llama/CodeLlama-70b-hf",
+    "meta-llama/Meta-Llama-3-8B",
+    "meta-llama/Meta-Llama-3-70B",
+    # deepseek-ai
     "deepseek-ai/deepseek-coder-6.7b-base",
     "deepseek-ai/deepseek-coder-7b-base-v1.5",
-    "google/codegemma-7b",
-    "meta-llama/Meta-Llama-3-8B",
-    "bigcode/starcoder2-15b",
-    "codellama/CodeLlama-34b-hf",
     "deepseek-ai/deepseek-coder-33b-base",
-    "codellama/CodeLlama-70b-hf",
-    "meta-llama/Meta-Llama-3-70B",
+    # google
+    "google/codegemma-7b",
+    # bigcode
+    "bigcode/starcoder2-15b",
 }
 
 MODEL2TEMPLATE = {
+    # meta-llama
     "meta-llama/CodeLlama-7b-hf": "code.j2",
+    "meta-llama/CodeLlama-34b-hf": "code.j2",
+    "meta-llama/CodeLlama-70b-hf": "code.j2",
+    "meta-llama/Meta-Llama-3-8B": "code.j2",
+    "meta-llama/Meta-Llama-3-70B": "code.j2",
+    "meta-llama/CodeLlama-7b-Instruct-hf": "inst-codellama.j2",
+    "meta-llama/CodeLlama-34b-Instruct-hf": "inst-codellama.j2",
+    "meta-llama/CodeLlama-70b-Instruct-hf": "inst-codellama-70b.j2",
+    "meta-llama/Meta-Llama-3-8B-Instruct": "inst-llama3.j2",
+    "meta-llama/Meta-Llama-3-70B-Instruct": "inst-llama3.j2",
+    # deepseek-ai
     "deepseek-ai/deepseek-coder-6.7b-base": "code.j2",
     "deepseek-ai/deepseek-coder-7b-base-v1.5": "code.j2",
-    "google/codegemma-7b": "code.j2",
-    "meta-llama/Meta-Llama-3-8B": "code.j2",
-    "bigcode/starcoder2-15b": "code.j2",
-    "codellama/CodeLlama-34b-hf": "code.j2",
     "deepseek-ai/deepseek-coder-33b-base": "code.j2",
-    "codellama/CodeLlama-70b-hf": "code.j2",
-    "meta-llama/Meta-Llama-3-70B": "code.j2",
-    "codellama/CodeLlama-7b-Instruct-hf": "inst-codellama.j2",
-    "ise-uiuc/Magicoder-S-CL-7B": "inst-majicoder.j2",
     "deepseek-ai/deepseek-coder-6.7b-instruct": "inst-deepseekcoder.j2",
-    "ise-uiuc/Magicoder-S-DS-6.7B": "inst-majicoder.j2",
-    "Bin12345/AutoCoder_S_6.7B": "inst-autocoder.j2",
     "deepseek-ai/deepseek-coder-7b-instruct-v1.5": "inst-deepseekcoder.j2",
+    "deepseek-ai/deepseek-coder-33b-instruct": "inst-deepseekcoder.j2",
+    # google
+    "google/codegemma-7b": "code.j2",
     "google/codegemma-7b-it": "inst-codegemma.j2",
     "google/codegemma-1.1-7b-it": "inst-codegemma.j2",
-    "meta-llama/Meta-Llama-3-8B-Instruct": "inst-llama3.j2",
+    # bigcode
+    "bigcode/starcoder2-15b": "code.j2",
     "bigcode/starcoder2-15b-instruct-v0.1": "inst-starcoder2.j2",
-    "codellama/CodeLlama-34b-Instruct-hf": "inst-codellama.j2",
-    "deepseek-ai/deepseek-coder-33b-instruct": "inst-deepseekcoder.j2",
+    # ise-uiuc
+    "ise-uiuc/Magicoder-S-CL-7B": "inst-majicoder.j2",
+    "ise-uiuc/Magicoder-S-DS-6.7B": "inst-majicoder.j2",
+    # Bin12345
+    "Bin12345/AutoCoder_S_6.7B": "inst-autocoder.j2",
     "Bin12345/AutoCoder": "inst-autocoder.j2",
-    "codellama/CodeLlama-70b-Instruct-hf": "inst-codellama-70b.j2",
-    "meta-llama/Meta-Llama-3-70B-Instruct": "inst-llama3.j2",
 }
 
 OPENAI_MODELS = {"gpt-3.5-turbo-0125", "gpt-4o-2024-05-13", "gpt-4-turbo-2024-04-09"}
